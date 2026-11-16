@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Спаси бабочку</title>
+<meta name="results-endpoint" content="">
+<style>
+:root{color-scheme:light;--ink:#192d25;--green:#21543e;--paper:#fffdf4;--muted:#53675a}
+*{box-sizing:border-box}body{margin:0;background:#f6f3e2;color:var(--ink);font:1rem/1.5 system-ui,sans-serif}main{max-width:960px;margin:auto;padding:clamp(16px,4vw,38px)}button{font:inherit;cursor:pointer}button:focus-visible,a:focus-visible{outline:3px solid #7944c7;outline-offset:4px}h1,h2,p{margin:0 0 .65rem}h1{font-size:clamp(2rem,6vw,3.6rem);line-height:1.02;letter-spacing:-.055em}header{margin-bottom:1.2rem}.subtitle{color:var(--muted);margin-bottom:.35rem}.rule{max-width:62ch}.meadow{border:2px solid #587a51;border-radius:28px;overflow:hidden;background:#ceeae4;box-shadow:0 10px 0 #e3dfc9}.score{display:flex;flex-wrap:wrap;gap:.45rem 1rem;padding:12px 16px;background:#24513d;color:white}.score span{white-space:nowrap}.garden{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px 8px;padding:12px clamp(10px,5vw,42px) 16px;background:radial-gradient(ellipse at 83% 8%,#fff2a6 0 6%,transparent 6.5%),radial-gradient(ellipse at 30% 115%,#a0cc83 0 54%,transparent 55%),radial-gradient(ellipse at 85% 106%,#b9da92 0 44%,transparent 45%),#d8f1eb}.strand{position:relative;display:grid;place-items:center;min-width:0;min-height:56px;background:none;border:0;border-top:4px solid #527b40;border-radius:9px;color:var(--ink)}.strand::before{content:"";position:absolute;top:0;left:50%;height:12px;border-left:2px solid #527b40}.pod{position:relative;display:grid;place-items:center;min-width:34px;height:39px;margin-top:8px;border:2px solid #4c6325;border-radius:50% 50% 43% 44%;background:repeating-linear-gradient(155deg,#f0e99d 0 7px,#d8df79 8px 13px);box-shadow:inset -4px -1px #0001,0 3px #50733434;font-size:.82rem;font-weight:800}.strand:hover:not(:disabled) .pod{background:#fff6af}.strand[data-state="retry"] .pod{background:#ffe6b6;border-color:#97521a}.strand:disabled{cursor:default}
+.message{margin:0;padding:10px 14px;text-align:center;background:#f1f8dd;min-height:44px}footer{margin-top:1.25rem;font-size:.88rem;color:var(--muted)}a{color:#24513d}dialog,.result{background:var(--paper);color:var(--ink);border:2px solid #78946a;border-radius:22px;padding:clamp(17px,4vw,28px);box-shadow:0 14px 40px #17332126}dialog{width:min(94vw,500px);max-height:90dvh}dialog::backdrop{background:#16342dab}.bar{display:flex;gap:10px;flex-wrap:wrap}.bar button,.primary{flex:1;min-height:46px;padding:.5em 1em;border:2px solid #24513d;border-radius:12px;background:#24513d;color:white;font-weight:760}.bar button:nth-child(2){background:#f1f8dd;color:#24513d}.cardword{font-size:clamp(1.75rem,7vw,3rem);line-height:1.16;font-weight:850;margin:.65rem 0 1rem}.blank{color:#7953a8}.feedback{padding:14px;border-radius:12px;background:#eef5d9;margin-bottom:12px}.feedback[data-correct="false"]{background:#fff0d6}.result{margin-top:18px}.result .bar{margin-top:16px}.close{float:right;border:0;background:none;padding:0 .5rem;min-height:42px;font-size:1.4rem}.result li+li{margin-top:.35em}[hidden]{display:none!important}
+
+body{background:#e4f5e8}
+main{max-width:none;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:clamp(10px,2vw,26px)}
+header{margin:0 0 clamp(9px,2vw,20px)}header h1{font-size:clamp(1.65rem,4vw,3.1rem);margin-bottom:.35rem}.rule{max-width:90ch;margin-bottom:0}
+.meadow{flex:1;display:flex;flex-direction:column;border-color:#49683b;border-radius:clamp(15px,3vw,32px);box-shadow:0 5px 0 #c9e2cc}
+.garden{flex:1;grid-template-rows:repeat(5,minmax(69px,1fr));gap:clamp(3px,1vh,9px) 0;padding:clamp(7px,1.4vh,14px) clamp(5px,5vw,80px);background:radial-gradient(circle at 89% 15%,#fff2ae 0 4.5%,transparent 4.7%),radial-gradient(ellipse at 12% 132%,#a3d78c 0 43%,transparent 43.3%),radial-gradient(ellipse at 88% 121%,#b9e49d 0 40%,transparent 40.3%),linear-gradient(165deg,#bce8ed,#e0f6c4)}
+.strand{border:0;border-radius:0;min-height:0;padding:0;height:100%;min-width:0;overflow:visible}
+.strand::before{height:7px;width:100%;left:0;top:1px;border:0;background:linear-gradient(#987247,#633f27);border-radius:35% 45% 40% 40%}
+.strand:nth-child(5n+1)::before{border-radius:85% 0 0 85%}.strand:nth-child(5n)::before{border-radius:0 85% 85% 0}
+.strand::after{content:"";position:absolute;top:6px;left:50%;height:13px;border-left:2px solid #6b5130;}
+.strand .pod{display:block;position:absolute;top:2px;left:50%;width:auto;max-width:100%;height:100%;min-width:0;margin:0;transform:translateX(-50%);border:0;border-radius:0;background:none!important;box-shadow:none;object-fit:contain;mix-blend-mode:multiply;pointer-events:none}
+.strand:hover:not(:disabled) .pod{filter:brightness(1.12) saturate(1.18)}
+.strand[data-state="ok"] .pod{opacity:.37;filter:grayscale(.8)}
+.strand[data-state="ok"] .badge{background:#286347;color:white}
+.strand[data-state="retry"] .badge,.strand[data-state="closed"] .badge{background:#ac521d;color:white}
+.badge{position:absolute;bottom:5%;left:50%;transform:translateX(-50%);z-index:2;display:grid;place-items:center;min-width:23px;height:23px;padding:0 3px;border:1px solid #37543a;border-radius:50%;background:#fff5c5;font-weight:800;font-size:.72rem;line-height:1}
+.flyer{position:fixed;inset:0 auto auto 0;z-index:5;width:clamp(105px,16vw,190px);pointer-events:none}
+.flyer img{display:block;width:100%;height:auto;animation:flutter .48s ease-in-out infinite;filter:url(#cutout)}
+@keyframes flutter{0%,100%{transform:scaleX(1)}27%{transform:scaleX(.68) rotate(3deg)}54%{transform:scaleX(.96)}77%{transform:scaleX(.74) rotate(-3deg)}}
+.cardword{overflow-wrap:anywhere}
+footer{margin-top:.7rem}
+@media(min-width:700px){.garden{grid-template-rows:repeat(5,minmax(77px,1fr))}}
+@media(max-width:480px){.subtitle,.rule,.message{font-size:.88rem}.score{padding:7px 10px;font-size:.85rem}.badge{height:19px;min-width:19px}.cardword{font-size:clamp(1.6rem,7vw,2.4rem)}}
+@media(prefers-reduced-motion:reduce){.flyer{display:none}}
+.strand[data-state="ok"] .pod,.strand[data-state="ok"] .badge,.strand[data-state="ok"]::after{visibility:hidden}
+#entry{width:min(100%,460px);margin:auto}#entry label{display:grid;margin:.7em 0;font-weight:700}#entry input{min-height:44px;padding:.45em;border:1px solid #78946a;border-radius:8px;font:inherit}.result .bar button{flex:1 1 180px}
+#choices button{font-size:1.65rem;line-height:1.25}
+.struck-sign{position:relative;display:inline-block}
+.struck-sign::after{content:"";position:absolute;left:-.16em;right:-.16em;top:51%;border-top:.09em solid currentColor;transform:rotate(-38deg)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" aria-hidden="true" style="position:absolute"><filter id="cutout" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3 -3 -3 0 9" result="mask"/><feComposite in="SourceGraphic" in2="mask" operator="in"/></filter></svg>
+<main>
+<header><p class="subtitle">Русский язык · 5 класс · 3–5 минут</p>
+<h1>Спаси бабочку</h1>
+<p class="rule">Открой кокон и реши, нужен ли Ь после шипящей. Верный ответ выпустит бабочку. На каждый кокон даётся один ответ. После получения отметки можно выполнить работу над ошибками.</p></header>
+<form id="entry" class="result">
+<h2>Представься</h2>
+<label>Фамилия<input name="surname" required maxlength="60" autocomplete="family-name"></label>
+<label>Имя<input name="given" required maxlength="60" autocomplete="given-name"></label>
+<label>Класс с буквой<input name="schoolClass" required maxlength="8" placeholder="5А" pattern="[0-9]{1,2} *[А-Яа-яЁё]" title="Например, 5А"></label>
+<button class="primary">Начать игру</button>
+</form>
+<section id="meadow" hidden class="meadow" aria-label="Поляна с коконами">
+<div class="score" aria-live="polite"><span id="released"></span><span id="progress"></span></div>
+<div class="garden" id="garden"></div>
+<p class="message" id="message"></p>
+</section>
+<section id="result" class="result" hidden aria-labelledby="resultTitle">
+<h2 id="resultTitle" tabindex="-1">Итог раунда</h2>
+<p id="summary"></p>
+<details id="review" hidden><summary>Слова с ошибками в первом круге</summary><ul id="mistakes"></ul></details>
+<p id="rnoStatus" role="status"></p>
+<p id="cloudStatus" role="status"></p>
+<button id="cloudRetry" hidden>Повторить отправку отметки</button>
+<div class="bar"><button id="rno" hidden>Начать работу над ошибками</button><button id="download">Скачать результат CSV</button><button id="restart">Новый участник</button></div>
+</section>
+<footer><button id="journal" hidden>Скачать журнал этого браузера CSV</button><br>Источники: <a href="https://saharina.ru/tests/test.php?name=test344.xml" target="_blank" rel="noopener">Упражнения по теме</a> · <a href="https://orfo.ruslang.ru/abc" target="_blank" rel="noopener">Академос</a> · <a href="https://orfo.ruslang.ru/docs/biblio/pravila_2006.pdf" target="_blank" rel="noopener">Полный академический справочник, § 32</a>
+<p style="margin:.5rem 0 0">Разработано О.В. Махневой, учителем русского языка и литературы «ФМЛ №31 г. Челябинска».</p>
+</footer>
+</main>
+<dialog id="card" aria-labelledby="question">
+<button class="close" id="close" type="button" aria-label="Закрыть карточку">×</button>
+<p id="position" class="subtitle"></p>
+<h2 id="question">Нужен мягкий знак?</h2>
+<p class="cardword"><span id="prefix"></span><span id="word"></span><span class="blank" aria-hidden="true">□</span><span id="tail"></span></p>
+<div id="choices" class="bar"><button id="yes" aria-label="Написать мягкий знак">Ь</button><button id="no" aria-label="Оставить без мягкого знака"><span class="struck-sign">Ь</span></button></div>
+<div id="answered" hidden>
+<div id="feedback" class="feedback" tabindex="-1"><strong id="verdict"></strong><br><span id="explanation"></span></div>
+<div class="bar"><button id="done">К поляне</button></div>
+</div>
+</dialog>
+<script>
+const bank = [["мышь","f"," пробежала","Полевая "],["дрожь","f","","От холода пробрала "],["речь","f","","Короткая "],["дичь","f","","Лесная "],["мяч","m","","Футбольный "],["борщ","m","","Горячий "],["плач","m"," малыша"],["ключ","m"," от двери"],["груш","p","","Пять "],["училищ","p","","Несколько "],["увлечь","i"," ребят рассказом"],["ешь","v"," яблоко","Ты "],["спрячь","c"," записку!"],["печь","i"," пироги","Будем "],["сплошь","a"," покрыто травой"],["вскачь","a","","Конь пустился "],["навзничь","a","","Упасть "],["наотмашь","a","","Ударить "],["замуж","e","","Выйти "],["невтерпёж","e","","Ждать "],["свеж","j","","Ветер "],["горяч","j","","Чай "],["хорош","j","","Рисунок "],["лишь","t"," один шаг","Остался "],["ишь","t",", как ловко!",""],["рожь","f","","Густая "],["вещь","f","","Нужная "],["брошь","f","","Старинная "],["дочь","f","","Младшая "],["мелочь","f","","Полезная "],["фальшь","f","","Явная "],["меч","m","","Тяжёлый "],["ковш","m","","Большой "],["багаж","m","","Ручной "],["пляж","m","","Песчаный "],["гараж","m","","Новый "],["сторож","m"," на посту"],["луж","p","","Много "],["рощ","p","","Среди берёзовых "],["туч","p","","Небо без "],["мажь","c"," тонким слоем"],["стричь","i"," волосы"],["настежь","a","","Открыть дверь "],["прочь","a","","Убежать "],["напрочь","a","","Забыть "],["вишь","t",", какой быстрый!"],["бишь","t"," его зовут?","Как "],["нищ","j","","Герой сказки "],["охоч","j"," до чтения","Он "]];
+const rules = {
+  f: 'Это существительное женского рода 3-го склонения. После шипящей пишется Ь.',
+  m: 'Это существительное мужского рода 2-го склонения. После шипящей Ь не пишется.',
+  i: 'Это глагол в начальной форме. После шипящей пишется Ь.',
+  v: 'Это глагол в форме 2-го лица единственного числа. После шипящей пишется Ь.',
+  c: 'Это глагол в повелительном наклонении. После шипящей пишется Ь.',
+  p: 'Это существительное в родительном падеже множественного числа. После шипящей Ь не пишется.',
+  j: 'Это краткое прилагательное мужского рода. После шипящей Ь не пишется.',
+  a: 'Это наречие. На конце после шипящей пишется Ь. Исключения: уж, замуж, невтерпёж.',
+  e: 'Это наречие-исключение. Уж, замуж и невтерпёж пишутся без Ь.',
+  t: 'Это частица. На конце этой частицы после шипящей пишется Ь.'
+};
+const byId = (id) => document.getElementById(id);
+const card = byId('card');
+const garden = byId('garden');
+const result = byId('result');
+let round = [];
+let phase = 'first';
+let active;
+let advance = false;
+let student;
+let graded;
+const resultsEndpoint = document.querySelector('meta[name="results-endpoint"]').content.trim();
+let transmission;
+
+async function submitResult(attempt) {
+  const status = byId('cloudStatus');
+  const retry = byId('cloudRetry');
+  retry.hidden = true;
+  status.textContent = 'Сохраняем отметку…';
+  try {
+    const response = await fetch(resultsEndpoint, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(attempt),
+      signal: AbortSignal.timeout(30000)
+    });
+    if (!response.ok) throw new Error('Result not saved');
+    const data = await response.json();
+    if (transmission === attempt) status.textContent = 'Отметка сохранена на Яндекс Диске: ' + data.grade + '.';
+  } catch {
+    if (transmission !== attempt) return;
+    status.textContent = 'Не удалось сохранить отметку на Диске. Можно повторить отправку или скачать CSV.';
+    retry.hidden = false;
+  }
+}
+byId('cloudRetry').onclick = () => { if (transmission) submitResult(transmission); };
+
+const journalKey = 'butterfly-results-v1';
+const entry = byId('entry');
+const meadow = byId('meadow');
+function readLocal(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+  catch { return fallback; }
+}
+function saveLocal(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); }
+  catch { /* The current result can still be downloaded. */ }
+}
+function downloadCsv(rows, filename) {
+  const quote = value => {
+    const safe = String(value);
+    return '"' + (/^[=+@\-\t\r\n]/.test(safe) ? "'" + safe : safe).replaceAll('"', '""') + '"';
+  };
+  const header = ['Дата', 'Фамилия', 'Имя', 'Класс', 'Отметка', 'Верно', 'Ошибки'];
+  const lines = [header, ...rows.map(row => [row.date, row.surname, row.given, row.schoolClass, row.grade, row.correct, row.errors])];
+  const url = URL.createObjectURL(new Blob(['\uFEFF' + lines.map(row => row.map(quote).join(';')).join('\r\n')], {type:'text/csv;charset=utf-8'}));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+function mark(errors) {
+  if (errors === 0) return 5;
+  if (errors <= 2) return 4;
+  if (errors <= 4) return 3;
+  return 2;
+}
+function shuffle(items) {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
+let lastSet = readLocal('butterfly-last-set', '');
+function sampleRound() {
+  const plan = [['f',4],['m',4],['p',2],['icv',4],['a',4],['e',2],['j',3],['t',2]];
+  const rows = plan.flatMap(([kinds, count]) =>
+    shuffle(bank.filter(([, rule]) => kinds.includes(rule))).slice(0,count));
+  const signature = () => rows.map(([word]) => word).sort().join('|');
+  if (signature() === lastSet) rows[4] = bank.find(row => row[1] === 'm' && !rows.includes(row));
+  lastSet = signature();
+  saveLocal('butterfly-last-set', lastSet);
+  return shuffle(rows);
+}
+const butterflies = ['assets/butterfly-orange.jpg', 'assets/butterfly-blue.jpg', 'assets/butterfly-yellow.jpg'];
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+function start() {
+  round = sampleRound().map(([word, rule, tail = '', prefix = '']) => ({word, rule, tail, prefix, state:'new', missed:false}));
+  graded = undefined;
+  transmission = undefined;
+  byId('cloudStatus').textContent = '';
+  byId('cloudRetry').hidden = true;
+  byId('rnoStatus').textContent = '';
+  entry.hidden = true;
+  meadow.hidden = false;
+  phase = 'first';
+  result.hidden = true;
+  draw();
+}
+function draw() {
+  const released = round.filter(item => item.state === 'ok').length;
+  const seen = round.filter(item => item.state !== 'new').length;
+  byId('released').textContent = '🦋 Бабочки: ' + released + ' из ' + round.length;
+  byId('progress').textContent = phase === 'first' ? 'Открыто: ' + seen + ' из ' + round.length : 'Повторный круг';
+  byId('message').textContent = phase === 'first' ? 'Выбери любой закрытый кокон.' :
+    phase === 'retry' ? 'Открой коконы с оранжевой отметкой.' : 'Раунд завершён.';
+  garden.replaceChildren(...round.map((item, index) => {
+    const button = document.createElement('button');
+    button.className = 'strand';
+    button.dataset.state = item.state;
+    button.disabled = phase === 'first' ? item.state !== 'new' : phase !== 'retry' || item.state !== 'retry';
+    const label = 'Кокон ';
+    button.setAttribute('aria-label', label + (index + 1) + (item.state === 'retry' ? ', повторить' : item.state === 'ok' ? ', бабочка улетела' : ''));
+    const pod = document.createElement('img');
+    pod.className = 'pod';
+    pod.src = 'assets/cocoon.jpg';
+    pod.alt = '';
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.setAttribute('aria-hidden', 'true');
+    badge.textContent = item.state === 'ok' ? '✓' : item.state === 'retry' || item.state === 'closed' ? '↻' : index + 1;
+    button.append(pod, badge);
+    button.onclick = () => { if (!button.disabled) openCard(index); };
+    return button;
+  }));
+}
+function openCard(index) {
+  active = round[index];
+  byId('position').textContent = 'Кокон ' + (index + 1);
+  byId('prefix').textContent = active.prefix;
+  byId('word').textContent = active.word.replace(/ь$/, '');
+  byId('tail').textContent = active.tail;
+  const choices = byId('choices');
+  const yes = byId('yes');
+  const no = byId('no');
+  choices.replaceChildren(...(Math.random() < .5 ? [yes, no] : [no, yes]));
+  choices.hidden = false;
+  byId('answered').hidden = true;
+  card.showModal();
+}
+function answer(withSign) {
+  if (advance) return;
+  const correct = active.word.endsWith('ь') === withSign;
+  if (phase === 'first') {
+    active.choice = withSign;
+    active.missed = !correct;
+  }
+  active.state = correct ? 'ok' : phase === 'first' ? 'retry' : 'closed';
+  const showExplanation = phase === 'first';
+  byId('verdict').textContent = showExplanation
+    ? (correct ? 'Верно! ' : 'Правильно так: ') + active.prefix + active.word + active.tail
+    : (correct ? 'Верно!' : 'Пока неверно.');
+  byId('explanation').hidden = !showExplanation;
+  byId('explanation').textContent = showExplanation ? rules[active.rule] : '';
+  byId('feedback').dataset.correct = correct;
+  byId('choices').hidden = true;
+  byId('answered').hidden = false;
+  byId('feedback').focus();
+  advance = true;
+
+}
+function releaseButterfly(index, origin) {
+  if (reducedMotion.matches) return;
+
+  const flyer = document.createElement('div');
+  flyer.className = 'flyer';
+  const wings = document.createElement('img');
+  wings.src = butterflies[index % butterflies.length];
+  wings.alt = '';
+  flyer.append(wings);
+
+  const startX = origin.left + origin.width / 2;
+  const startY = origin.top + origin.height / 2;
+  const direction = startX < window.innerWidth / 2 ? 1 : -1;
+  const endX = direction > 0 ? window.innerWidth + 105 : -105;
+  const endY = Math.max(75, Math.min(startY - 18, window.innerHeight - 75));
+  const sway = Math.min(32, window.innerHeight * .057);
+  const frames = Array.from({length: 49}, (_, step) => {
+    const time = step / 48;
+    const travel = time * time * (2 - time);
+    const wave = time * Math.PI * 5.5;
+    const x = startX + (endX - startX) * travel;
+    const y = startY + (endY - startY) * travel +
+      Math.sin(wave) * sway * Math.sin(Math.PI * time);
+    const tilt = Math.sin(wave + .6) * 12 * direction;
+    const scale = .42 + .6 * Math.sin(Math.PI * time * .88);
+    return {
+      transform: `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${tilt}deg) scale(${scale})`,
+      opacity: Math.min(1, time * 11)
+    };
+  });
+  document.body.append(flyer);
+  const animation = flyer.animate(frames, {duration: 4050, fill: 'both'});
+  animation.onfinish = () => flyer.remove();
+}
+
+function finish() {
+  phase = 'graded';
+  draw();
+  const missed = round.filter(item => item.missed);
+  const errors = missed.length;
+  const correct = round.length - errors;
+  graded = {...student, date:new Date().toLocaleString('ru-RU'), grade:mark(errors), correct, errors};
+  saveLocal(journalKey, [...readLocal(journalKey, []), graded]);
+  if (resultsEndpoint) {
+    transmission = {id:crypto.randomUUID(), ...student, answers:round.map(item => [item.word,item.choice])};
+    submitResult(transmission);
+  }
+  byId('journal').hidden = false;
+  byId('rno').hidden = !errors;
+  byId('summary').textContent = student.surname + ' ' + student.given + ', ' + student.schoolClass +
+    '. Отметка: ' + graded.grade + '. Верно: ' + correct + ' из ' + round.length + '. Ошибок: ' + errors + '.';
+  byId('review').hidden = !errors;
+  byId('review').open = errors > 0;
+  byId('mistakes').replaceChildren(...missed.map(item => {
+    const li = document.createElement('li');
+    li.textContent = item.prefix + item.word + item.tail.replace(/[.!?]$/, '') + '. ' + rules[item.rule];
+    return li;
+  }));
+  result.hidden = false;
+  byId('resultTitle').focus({preventScroll:true});
+  result.scrollIntoView({block:'nearest'});
+}
+card.addEventListener('close', () => {
+  if (!advance) return;
+  advance = false;
+  const index = round.indexOf(active);
+  const origin = garden.children[index].getBoundingClientRect();
+  draw();
+  if (active.state === 'ok') releaseButterfly(index, origin);
+  if (phase === 'first' && round.every(item => item.state !== 'new')) {
+    return finish();
+  }
+  if (phase === 'retry' && !round.some(item => item.state === 'retry')) {
+    phase = 'done';
+    draw();
+    const corrected = round.filter(item => item.missed && item.state === 'ok').length;
+    byId('rnoStatus').textContent = 'Работа над ошибками завершена. Исправлено: ' + corrected + ' из ' + graded.errors + '.';
+    result.scrollIntoView({block:'nearest'});
+    return;
+  }
+  garden.querySelector('button:not(:disabled)')?.focus();
+});
+byId('yes').onclick = () => answer(true);
+byId('no').onclick = () => answer(false);
+byId('close').onclick = byId('done').onclick = () => card.close();
+entry.addEventListener('submit', event => {
+  event.preventDefault();
+  const fields = new FormData(entry);
+  const surname = fields.get('surname').trim();
+  const given = fields.get('given').trim();
+  const schoolClass = fields.get('schoolClass').replace(/ +/g,'').toUpperCase();
+  if (!surname || !given) {
+    entry.elements[!surname ? 'surname' : 'given'].focus();
+    return;
+  }
+  student = {surname, given, schoolClass};
+  start();
+  garden.querySelector('button').focus();
+});
+byId('rno').onclick = () => {
+  phase = 'retry';
+  byId('rno').hidden = true;
+  byId('review').hidden = true;
+  byId('review').open = false;
+  draw();
+  meadow.scrollIntoView({block:'nearest'});
+  garden.querySelector('button:not(:disabled)')?.focus({preventScroll:true});
+};
+byId('download').onclick = () => downloadCsv([graded], 'result.csv');
+byId('journal').onclick = () => {
+  const rows = readLocal(journalKey, []);
+  if (rows.length || graded) downloadCsv(rows.length ? rows : [graded], 'journal.csv');
+};
+byId('restart').onclick = () => {
+  entry.reset();
+  result.hidden = true;
+  meadow.hidden = true;
+  garden.replaceChildren();
+  entry.hidden = false;
+  entry.elements.surname.focus();
+};
+byId('journal').hidden = !readLocal(journalKey, []).length;
+</script>
+</body>
+</html>
